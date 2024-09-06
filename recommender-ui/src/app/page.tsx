@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import ChatRow from '@/components/ChatRow'
-import BackgroundDots from '@/components/BackgroundDot'
-import Dot from '@/components/Dot'
+import { BackgroundDots } from '@/components/BackgroundDot'
+import { Dot } from '@/components/Dot'
+import { ChatRow } from '@/components/ChatRow'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -36,6 +36,7 @@ export default function Home() {
                 if (event.data === '[END]') {
                     setIsLoading(false)
                 } else {
+                    setIsLoading(false)
                     setMessages((prevMessages) => {
                         const lastMessage =
                             prevMessages[prevMessages.length - 1]
@@ -97,7 +98,6 @@ export default function Home() {
             socketRef.current.send(message)
         } else {
             console.error('WebSocket is not connected')
-            // Optionally, you can show an error message to the user
             setMessages((prev) => [
                 ...prev,
                 {
@@ -105,6 +105,7 @@ export default function Home() {
                     isUser: false,
                 },
             ])
+            setIsLoading(false)
         }
     }
 
@@ -112,8 +113,8 @@ export default function Home() {
         <main className="flex min-h-screen items-center justify-center p-8 relative">
             <BackgroundDots className="absolute inset-0 z-0" />
             <div className="w-full max-w-5xl z-10 relative">
-                <div className=" drop-shadow-lg rounded-lg overflow-hidden">
-                    <div className="h-[calc(100vh-14rem)] overflow-y-auto p-8 bg-white no-scrollbar">
+                <div className="drop-shadow-lg rounded-lg overflow-hidden">
+                    <div className="h-[calc(100vh-11rem)] overflow-y-auto p-8 bg-white no-scrollbar">
                         {messages.map((message, index) => (
                             <ChatRow
                                 key={index}
@@ -126,6 +127,14 @@ export default function Home() {
                                 }
                             />
                         ))}
+                        {isLoading && (
+                            <ChatRow
+                                message=""
+                                isUser={false}
+                                bgColor="bg-gray-100"
+                                isLoading={true}
+                            />
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
                     <form onSubmit={handleSubmit} className="p-4 bg-white ">
@@ -149,11 +158,11 @@ export default function Home() {
                     <div className="px-6 py-2 space-x-4 text-sm text-gray-500 border-gray-200 bg-white flex items-center">
                         <div className="flex items-center">
                             <Dot status={isConnected} />
-                            <span>Connection</span>
+                            <p>Connection</p>
                         </div>
                         <div className="flex items-center">
                             <Dot status={isLoading} />
-                            <span>Generating</span>
+                            <p>Generating</p>
                         </div>
                     </div>
                 </div>

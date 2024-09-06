@@ -12,7 +12,7 @@ interface DotPatternBackgroundProps {
     [key: string]: any
 }
 
-export const BackgroundDots: React.FC<DotPatternBackgroundProps> = ({
+export const BackgroundDots = ({
     dotSize = 1.2,
     dotColor = '#fb3a5d',
     backgroundColor = '#e5e7eb',
@@ -21,7 +21,7 @@ export const BackgroundDots: React.FC<DotPatternBackgroundProps> = ({
     fade = true,
     style,
     ...props
-}) => {
+}: DotPatternBackgroundProps) => {
     const encodedDotColor = encodeURIComponent(dotColor)
 
     const maskStyle: React.CSSProperties = fade
@@ -48,5 +48,3 @@ export const BackgroundDots: React.FC<DotPatternBackgroundProps> = ({
         />
     )
 }
-
-export default BackgroundDots
