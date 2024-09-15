@@ -10,4 +10,4 @@ down:
 down-prune:
 	docker compose down --volumes
 
-.PHONY: up down down-prune
+.PHONY: up up-rebuild down down-prune
