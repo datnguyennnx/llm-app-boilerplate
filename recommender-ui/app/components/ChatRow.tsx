@@ -1,24 +1,28 @@
-import React from 'react'
-import { LogoDwarves, LogoUser } from './Logo'
-import { MarkdownRenderer } from './MarkdownRenderer'
-import { LoadingDots } from './LoadingDots'
+import React from 'react';
+import { LogoDwarves, LogoUser } from '~/components/Logo';
+import { LoadingDots } from '~/components/LoadingDots';
+import { MarkdownRenderer } from '~/components/MarkdownRenderer';
 
 interface ChatRowProps {
-    message: string
-    isUser: boolean
-    bgColor: string
-    isLoading?: boolean
+    message: string;
+    isUser: boolean;
+    bgColor: string;
+    isLoading?: boolean;
+    isStreaming?: boolean;
 }
 
-export const ChatRow = ({
+export const ChatRow= ({
     message,
     isUser,
     bgColor,
     isLoading,
+    isStreaming,
 }: ChatRowProps) => {
     return (
         <div
-            className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}
+            className={`flex ${
+                isUser ? 'justify-end' : 'justify-start'
+            } mb-4 w-full`}
         >
             <div
                 className={`flex items-start ${
@@ -36,10 +40,13 @@ export const ChatRow = ({
                     {isLoading ? (
                         <LoadingDots />
                     ) : (
-                        <MarkdownRenderer content={message} />
+                        <MarkdownRenderer
+                            content={message}
+                            isStreaming={isStreaming}
+                        />
                     )}
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
