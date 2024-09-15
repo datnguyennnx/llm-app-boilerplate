@@ -1,22 +1,96 @@
+---
+module-name: LLM Application Boilerplate
+version: 0.1.0
+description: A boilerplate for quickly setting up an LLM application with a Remix.js frontend and a FastAPI backend
+related-modules:
+    - name: recommender-ui
+      path: ./recommender-ui
+    - name: recommender-be
+      path: ./recommender-be
+technologies:
+    - Remix.js
+    - FastAPI
+    - Docker
+    - Python
+    - TypeScript
+    - WebSocket
+conventions:
+    - Follow Prettier code formatting
+    - Use ESLint for JavaScript/TypeScript linting
+    - Follow PEP 8 style guide for Python code
+architecture:
+    style: Microservices
+    main-components:
+        - Remix.js Frontend (recommender-ui)
+        - FastAPI Backend (recommender-be)
+        - NGINX Reverse Proxy
+    data-flow:
+        - Client -> NGINX -> Remix.js Frontend -> FastAPI Backend -> LLM Service
+development:
+    setup-steps:
+        - Clone the repository
+        - Install Docker and Docker Compose
+        - Run `make up` to start the application stack
+    build-command: make up
+    test-command: TBD
+business-requirements:
+    key-features:
+        - Quickly set up an LLM-powered application
+        - Scalable architecture for handling AI-driven workflows
+        - Easy customization for specific use cases
+    target-audience: Developers building LLM-powered applications
+    success-metrics:
+        - Ease of deployment
+        - Performance and scalability of the application
+        - Developer satisfaction and productivity
+quality-assurance:
+    linting-tools:
+        - ESLint (JavaScript/TypeScript)
+        - Flake8 (Python)
+    testing-frameworks:
+        - TBD (Frontend)
+        - Pytest (Backend)
+    coverage-threshold: TBD
+deployment:
+    platform: Docker
+    cicd-pipeline: TBD
+    staging-environment: Local Docker environment
+    production-environment: TBD
+---
+
 # LLM Application Boilerplate
 
-This project provides a boilerplate for quickly setting up an LLM (Language Model) application with a Next.js frontend and a FastAPI backend. It uses Docker for containerization and includes a Makefile for easy deployment.
+This project provides a boilerplate for quickly setting up an LLM (Language Model) application with a Remix.js frontend and a FastAPI backend. It uses Docker for containerization and includes a Makefile for easy deployment.
 
 ## Project Structure
 
-- `recommender-ui`: Next.js 14 frontend with shadcn UI library
-- `recommender-be`: Python FastAPI backend with WebSocket support
-- `docker-compose.yml`: Docker configuration for the entire stack
-- `Makefile`: Simplified commands for building and running the project
+-   `recommender-ui`: Remix.js frontend with Tailwind CSS
+-   `recommender-be`: Python FastAPI backend with WebSocket support
+-   `docker-compose.yml`: Docker configuration for the entire stack
+-   `Makefile`: Simplified commands for building and running the project
+-   `nginx.conf`: NGINX configuration for reverse proxy
+
+## Architecture Overview
+
+The LLM Application Boilerplate follows a microservices architecture consisting of the following main components:
+
+1. Remix.js Frontend: Handles the user interface and client-side logic.
+2. FastAPI Backend: Manages API requests, WebSocket connections, and integrates with the LLM service.
+3. NGINX Reverse Proxy: Routes traffic to the appropriate service and handles SSL termination.
+
+The data flow in this system is as follows:
+Client -> NGINX -> Remix.js Frontend -> FastAPI Backend -> LLM Service
+
+This architecture ensures scalability and separation of concerns, allowing for easy customization and extension of each component.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Git
-- Docker
-- Docker Compose
-- Make (optional, but recommended)
+-   Git
+-   Docker
+-   Docker Compose
+-   Make (optional, but recommended)
 
 ### Cloning the Repository
 
@@ -33,14 +107,14 @@ We use a Makefile to simplify the Docker commands. Here are the available comman
 
 1. Build and start the entire stack:
 
-   ```
-   make up
-   ```
+    ```
+    make up
+    ```
 
 2. Stop and remove the containers:
-   ```
-   make down
-   ```
+    ```
+    make down
+    ```
 
 If you don't have Make installed, you can use the Docker Compose commands directly:
 
@@ -56,12 +130,30 @@ docker-compose down
 
 Once the containers are up and running:
 
-- The frontend will be available at: `http://localhost:3000`
-- The backend API will be available at: `http://localhost:8000`
+-   The frontend will be available at: `http://localhost:3000`
+-   The backend API will be available at: `http://localhost:8000`
 
-## Development
+## Development Guidelines
 
-For development purposes, you can run each service individually. Refer to the README files in the `recommender-ui` and `recommender-be` directories for more detailed instructions on running and developing each component separately.
+1. Frontend Development (recommender-ui):
+
+    - Follow the Remix.js best practices and conventions.
+    - Use TypeScript for type-safe code.
+    - Utilize Tailwind CSS for styling.
+    - Format code using Prettier and lint with ESLint.
+
+2. Backend Development (recommender-be):
+
+    - Follow FastAPI best practices for API development.
+    - Use Python type hints for better code clarity.
+    - Implement WebSocket support for real-time communication.
+    - Format code according to PEP 8 style guide and lint with Flake8.
+
+3. General Guidelines:
+    - Write clear, concise, and well-documented code.
+    - Use meaningful variable and function names.
+    - Implement proper error handling and logging.
+    - Write unit tests for critical functionality.
 
 ## Customizing the Template
 
@@ -70,6 +162,8 @@ This boilerplate provides a starting point for your LLM application. You can cus
 1. Modify the frontend UI in the `recommender-ui` directory to match your application's needs.
 2. Update the backend API in the `recommender-be` directory to integrate with your chosen LLM and implement your business logic.
 3. Adjust the Docker and Makefile configurations if you need to add more services or change the existing setup.
+4. Implement authentication and authorization mechanisms suitable for your application.
+5. Set up a CI/CD pipeline for automated testing and deployment.
 
 ## Contributing
 
@@ -78,3 +172,10 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Acknowledgments
+
+-   Remix.js team for the excellent React-based web framework
+-   FastAPI team for the high-performance Python web framework
+-   Docker team for containerization technology
+-   All open-source libraries and tools used in this project
