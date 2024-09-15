@@ -1,50 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ClipboardCopy } from 'lucide-react';
-import { Components } from 'react-markdown';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { useState, useEffect, useCallback } from 'react'
+import ReactMarkdown, { Components } from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { ClipboardCopy } from 'lucide-react'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 interface MarkdownRendererProps {
-    content: string;
-    isStreaming?: boolean;
+    content: string
+    isStreaming?: boolean
 }
 
 interface CodeBlockProps {
-    language: string;
-    value: string;
+    language: string
+    value: string
 }
 
 export const MarkdownRenderer = ({
     content,
     isStreaming,
 }: MarkdownRendererProps) => {
-    const [processedContent, setProcessedContent] = useState('');
+    const [processedContent, setProcessedContent] = useState('')
 
     useEffect(() => {
         if (isStreaming) {
-            const lines = content.split('\n');
+            const lines = content.split('\n')
             const uniqueLines = lines.filter(
-                (line, index) => lines.indexOf(line) === index
-            );
-            setProcessedContent(uniqueLines.join('\n'));
+                (line, index) => lines.indexOf(line) === index,
+            )
+            setProcessedContent(uniqueLines.join('\n'))
         } else {
-            setProcessedContent(content);
+            setProcessedContent(content)
         }
-    }, [content, isStreaming]);
+    }, [content, isStreaming])
 
     const CodeBlock = useCallback(({ language, value }: CodeBlockProps) => {
-        const [copyTip, setCopyTip] = useState("Copy code");
-        
+        const [copyTip, setCopyTip] = useState('Copy code')
+
         return (
             <div className="relative my-4 overflow-x-auto">
                 <CopyToClipboard
                     text={value}
                     onCopy={() => {
-                        setCopyTip("Copied");
-                        setTimeout(() => setCopyTip("Copy code"), 2000);
+                        setCopyTip('Copied')
+                        setTimeout(() => setCopyTip('Copy code'), 2000)
                     }}
                 >
                     <button
@@ -66,23 +65,20 @@ export const MarkdownRenderer = ({
                 </SyntaxHighlighter>
                 <span
                     style={{
-                    bottom: 0,
-                    right: 0,
+                        bottom: 0,
+                        right: 0,
                     }}
                     className="absolute z-40 mb-5 mr-1 rounded-lg bg-base-content/40 p-1 text-xs uppercase text-base-300 backdrop-blur-sm"
                 >
                     {language}
                 </span>
             </div>
-        );
-    }, []);
+        )
+    }, [])
 
     const components: Components = {
         h1: ({ node, ...props }) => (
-            <h1
-                className="text-3xl font-bold my-0 text-pink-700"
-                {...props}
-            />
+            <h1 className="text-3xl font-bold my-0 text-pink-700" {...props} />
         ),
         h2: ({ node, ...props }) => (
             <h2
@@ -91,16 +87,10 @@ export const MarkdownRenderer = ({
             />
         ),
         h3: ({ node, ...props }) => (
-            <h3
-                className="text-xl font-medium my-0 text-pink-500"
-                {...props}
-            />
+            <h3 className="text-xl font-medium my-0 text-pink-500" {...props} />
         ),
         h4: ({ node, ...props }) => (
-            <h4
-                className="text-lg font-medium my-0 text-pink-400"
-                {...props}
-            />
+            <h4 className="text-lg font-medium my-0 text-pink-400" {...props} />
         ),
         p: ({ node, ...props }) => (
             <p className="leading-relaxed text-gray-700" {...props} />
@@ -123,19 +113,19 @@ export const MarkdownRenderer = ({
         ),
 
         code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
-            const value = String(children).replace(/\n$/, '');
+            const match = /language-(\w+)/.exec(className || '')
+            const language = match ? match[1] : ''
+            const value = String(children).replace(/\n$/, '')
 
             if (!inline && match) {
-                return <CodeBlock language={language} value={value} />;
+                return <CodeBlock language={language} value={value} />
             }
 
             return (
                 <code className={className} {...props}>
                     {children}
                 </code>
-            );
+            )
         },
         hr: ({ node, ...props }) => (
             <hr className="my-4 border-t-2 border-gray-200" {...props} />
@@ -150,7 +140,7 @@ export const MarkdownRenderer = ({
         tr: ({ node, ...props }) => <tr {...props} />,
         th: ({ node, ...props }) => <th {...props} />,
         td: ({ node, ...props }) => <td {...props} />,
-    };
+    }
 
     return (
         <div className="prose prose-zinc dark:prose-invert max-w-none scroll-smooth focus:scroll-auto">
@@ -158,5 +148,5 @@ export const MarkdownRenderer = ({
                 {processedContent}
             </ReactMarkdown>
         </div>
-    );
-};
+    )
+}

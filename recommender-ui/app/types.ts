@@ -1,3 +1,3 @@
 export interface RootLoaderData {
-    publicPath: string;
-  }
+    publicPath: string
+}

@@ -1,13 +1,13 @@
-import { Logo } from '~/components/Logo';
-import { LoadingDots } from '~/components/LoadingDots';
-import { MarkdownRenderer } from '~/components/MarkdownRenderer';
+import { Logo } from '~/components/Logo'
+import { LoadingDots } from '~/components/LoadingDots'
+import { MarkdownRenderer } from '~/components/MarkdownRenderer'
 
 interface ChatRowProps {
-    message: string;
-    isUser: boolean;
-    bgColor: string;
-    isLoading?: boolean;
-    isStreaming?: boolean;
+    message: string
+    isUser: boolean
+    bgColor: string
+    isLoading?: boolean
+    isStreaming?: boolean
 }
 
 export const ChatRow = ({
@@ -29,7 +29,7 @@ export const ChatRow = ({
                 } max-w-[75%]`}
             >
                 <div className="w-8 h-8 flex-shrink-0 mt-1">
-                    {isUser ? <Logo type='user' /> : <Logo type='robot' />}
+                    {isUser ? <Logo type="user" /> : <Logo type="robot" />}
                 </div>
                 {isLoading ? (
                     <div
@@ -53,8 +53,5 @@ export const ChatRow = ({
                 )}
             </div>
         </div>
-    );
-};
-
-
-
+    )
+}

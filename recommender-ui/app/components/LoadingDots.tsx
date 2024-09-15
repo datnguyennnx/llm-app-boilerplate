@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export const LoadingDots = () => {
     return (
@@ -13,5 +13,5 @@ export const LoadingDots = () => {
                 className={`h-2 w-2 bg-gray-300 rounded-full animate-bounce`}
             ></div>
         </div>
-    );
-};
+    )
+}

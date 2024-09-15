@@ -8,7 +8,6 @@
     --background-end-rgb: 255, 255, 255;
 }
 
-
 @media (prefers-color-scheme: dark) {
     :root {
         --foreground-rgb: 255, 255, 255;
@@ -88,9 +87,8 @@
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
         ::selection {
-          background: rgb(129 140 248);
+            background: rgb(129 140 248);
         }
-  
     }
     .dark {
         --background: 0 0% 3.9%;
