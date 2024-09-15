@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import ReactMarkdown, { Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -9,11 +9,6 @@ import CopyToClipboard from 'react-copy-to-clipboard'
 interface MarkdownRendererProps {
     content: string
     isStreaming?: boolean
-}
-
-interface CodeBlockProps {
-    language: string
-    value: string
 }
 
 export const MarkdownRenderer = ({
@@ -34,112 +29,115 @@ export const MarkdownRenderer = ({
         }
     }, [content, isStreaming])
 
-    const CodeBlock = useCallback(({ language, value }: CodeBlockProps) => {
-        const [copyTip, setCopyTip] = useState('Copy code')
+    const components: Components = {
+        h1: ({...props }) => (
+            <h1 className="text-3xl font-bold my-0 text-indigo-800" {...props} />
+        ),
 
-        return (
-            <div className="relative my-4 overflow-x-auto">
-                <CopyToClipboard
-                    text={value}
-                    onCopy={() => {
-                        setCopyTip('Copied')
-                        setTimeout(() => setCopyTip('Copy code'), 2000)
-                    }}
-                >
-                    <button
-                        className="absolute right-4 z-10 p-2 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600"
-                        title={copyTip}
-                    >
-                        <ClipboardCopy size={18} />
-                    </button>
-                </CopyToClipboard>
+        h2: ({...props }) => (
+            <h2
+                className="text-2xl font-semibold my-0 text-indigo-700"
+                {...props}
+            />
+        ),
+
+        h3: ({...props }) => (
+            <h3 className="text-xl font-medium my-0 text-indigo-600" {...props} />
+        ),
+
+        h4: ({...props }) => (
+            <h4 className="text-lg font-medium my-0 text-indigo-500" {...props} />
+        ),
+
+        p: ({...props }) => (
+            <p className="leading-relaxed text-gray-700 my-0" {...props} />
+        ),
+
+        ul: ({...props }) => (
+            <ul className="list-disc pl-6" {...props} />
+        ),
+
+        ol: ({...props }) => (
+            <ol className="list-decimal pl-6" {...props} />
+        ),
+
+        li: ({...props }) => <li className="mb-1" {...props} />,
+
+        blockquote: ({...props }) => (
+            <blockquote
+                className="border-l-2 border-indigo-500 pl-4 italic my-4 text-gray-600"
+                {...props}
+            />
+        ),
+
+        a: ({...props }) => (
+            <a className="text-blue-500 hover:underline" {...props} />
+        ),
+
+        code({inline, className, children, ...props }: any) {
+            const match = /language-(\w+)/.exec(className || '');
+            return !inline && match ? (
                 <SyntaxHighlighter
                     style={atomDark}
-                    language={language}
+                    language={match[1]}
                     PreTag="div"
                     className="mockup-code scrollbar-thin scrollbar-track-base-content/5 scrollbar-thumb-base-content/40 scrollbar-track-rounded-md scrollbar-thumb-rounded"
                     showLineNumbers={true}
                     useInlineStyles={true}
+                    {...props}
                 >
-                    {value}
+                    {String(children).replace(/\n$/, '')}
                 </SyntaxHighlighter>
-                <span
-                    style={{
-                        bottom: 0,
-                        right: 0,
-                    }}
-                    className="absolute z-40 mb-5 mr-1 rounded-lg bg-base-content/40 p-1 text-xs uppercase text-base-300 backdrop-blur-sm"
-                >
-                    {language}
-                </span>
-            </div>
-        )
-    }, [])
-
-    const components: Components = {
-        h1: ({ node, ...props }) => (
-            <h1 className="text-3xl font-bold my-0 text-pink-700" {...props} />
-        ),
-        h2: ({ node, ...props }) => (
-            <h2
-                className="text-2xl font-semibold my-0 text-pink-600"
-                {...props}
-            />
-        ),
-        h3: ({ node, ...props }) => (
-            <h3 className="text-xl font-medium my-0 text-pink-500" {...props} />
-        ),
-        h4: ({ node, ...props }) => (
-            <h4 className="text-lg font-medium my-0 text-pink-400" {...props} />
-        ),
-        p: ({ node, ...props }) => (
-            <p className="leading-relaxed text-gray-700" {...props} />
-        ),
-        ul: ({ node, ...props }) => (
-            <ul className="list-disc pl-6" {...props} />
-        ),
-        ol: ({ node, ...props }) => (
-            <ol className="list-decimal pl-6" {...props} />
-        ),
-        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        blockquote: ({ node, ...props }) => (
-            <blockquote
-                className="border-l-4 border-indigo-500 pl-4 italic my-4 text-gray-600"
-                {...props}
-            />
-        ),
-        a: ({ node, ...props }) => (
-            <a className="text-blue-500 hover:underline" {...props} />
-        ),
-
-        code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '')
-            const language = match ? match[1] : ''
-            const value = String(children).replace(/\n$/, '')
-
-            if (!inline && match) {
-                return <CodeBlock language={language} value={value} />
-            }
-
-            return (
+            ) : (
                 <code className={className} {...props}>
                     {children}
                 </code>
-            )
+            );
         },
-        hr: ({ node, ...props }) => (
+
+        pre({ children, ...props }: any) {
+            const codeElement = children && children.length > 0 ? children[0] : null;
+            const codeChildren = codeElement && codeElement.props ? codeElement.props.children : '';
+            const codeChunk = String(codeChildren).replace(/\n$/, '');
+            const [copyTip, setCopyTip] = useState("Copy code");
+
+            return (
+                <div className="relative overflow-x-auto">
+                    <CopyToClipboard
+                        text={codeChunk}
+                        onCopy={() => {
+                            setCopyTip("Copied");
+                            setTimeout(() => setCopyTip("Copy code"), 2000);
+                        }}
+                    >
+                        <button
+                            className="absolute right-2 top-4 z-50 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600"
+                            title={copyTip}
+                        >
+                            <ClipboardCopy size={18} />
+                        </button>
+                    </CopyToClipboard>
+                    {children}
+                </div>
+            );
+        },
+
+
+        hr: ({...props }) => (
             <hr className="my-4 border-t-2 border-gray-200" {...props} />
         ),
-        table: ({ node, ...props }) => (
+
+        table: ({...props }) => (
             <div className="overflow-x-auto ">
                 <table className="my-0" {...props} />
             </div>
         ),
-        thead: ({ node, ...props }) => <thead {...props} />,
-        tbody: ({ node, ...props }) => <tbody {...props} />,
-        tr: ({ node, ...props }) => <tr {...props} />,
-        th: ({ node, ...props }) => <th {...props} />,
-        td: ({ node, ...props }) => <td {...props} />,
+        
+        thead: ({...props }) => <thead {...props} />,
+        tbody: ({...props }) => <tbody {...props} />,
+        tr: ({...props }) => <tr {...props} />,
+        th: ({...props }) => <th {...props} />,
+        td: ({...props }) => <td {...props} />,
     }
 
     return (
