@@ -7,6 +7,7 @@ This project provides a boilerplate for quickly setting up an LLM (Language Mode
 -   `recommender-ui`: Remix.js frontend with Tailwind CSS
 -   `recommender-be`: Python FastAPI backend with WebSocket support
 -   `docker-compose.yml`: Docker configuration for the entire stack
+-   `docker-compose.backend.yml`: Docker configuration for running only the backend
 -   `Makefile`: Simplified commands for building and running the project
 -   `nginx.conf`: NGINX configuration for reverse proxy
 
@@ -31,6 +32,7 @@ This architecture ensures scalability and separation of concerns, allowing for e
 -   Docker
 -   Docker Compose
 -   Make (optional, but recommended)
+-   Bun (for running the frontend locally)
 
 ### Cloning the Repository
 
@@ -52,18 +54,43 @@ We use a Makefile to simplify the Docker commands. Here are the available comman
     ```
 
 2. Stop and remove the containers:
+
     ```
     make down
+    ```
+
+3. Build and start only the backend:
+
+    ```
+    make up-backend
+    ```
+
+4. Rebuild and start only the backend:
+
+    ```
+    make up-backend-rebuild
+    ```
+
+5. Stop and remove only the backend container:
+
+    ```
+    make down-backend
     ```
 
 If you don't have Make installed, you can use the Docker Compose commands directly:
 
 ```bash
-# Build and start the stack
+# Build and start the entire stack
 docker-compose up -d
 
 # Stop and remove the containers
 docker-compose down
+
+# Build and start only the backend
+docker-compose -f docker-compose.backend.yml up -d
+
+# Stop and remove only the backend container
+docker-compose -f docker-compose.backend.yml down
 ```
 
 ## Accessing the Application
@@ -72,6 +99,44 @@ Once the containers are up and running:
 
 -   The frontend will be available at: `http://localhost:3000`
 -   The backend API will be available at: `http://localhost:8000`
+
+## Development Setup
+
+For development purposes, you might want to run the backend in a container while developing the frontend locally. Here's how to do that:
+
+### Running the Backend Container
+
+1. Use the `make up-backend` command to run only the backend:
+
+    ```bash
+    make up-backend
+    ```
+
+2. The backend API will be available at: `http://localhost:8000`
+
+### Running the Frontend Locally
+
+1. Navigate to the frontend directory:
+
+    ```bash
+    cd recommender-ui
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    bun install
+    ```
+
+3. Start the development server:
+
+    ```bash
+    bun run dev
+    ```
+
+4. The frontend will be available at: `http://localhost:3000`
+
+This setup allows you to make changes to the frontend code and see the results immediately, while still having the backend running in a container.
 
 ## Development Guidelines
 
