@@ -1,9 +1,8 @@
 up:
-	docker compose up --build -d
+	docker compose up --build -d 
 
 up-rebuild:
 	docker compose up --build --force-recreate --no-deps
-
 
 down:
 	docker compose down
