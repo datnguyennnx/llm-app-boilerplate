@@ -24,4 +24,7 @@ export default defineConfig({
             plugins: [tailwindcss, autoprefixer],
         },
     },
+    optimizeDeps: {
+        include: ['react-syntax-highlighter', 'react-copy-to-clipboard'],
+    },
 })

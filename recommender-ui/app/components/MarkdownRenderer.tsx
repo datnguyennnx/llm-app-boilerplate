@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import ReactMarkdown, { Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { ClipboardCopy } from 'lucide-react'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
+import CopyToClipboard from 'react-copy-to-clipboard'
 
 interface MarkdownRendererProps {
     content: string
