@@ -1,48 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Components } from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ClipboardCopy } from 'lucide-react';
+import { Components } from 'react-markdown';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 interface MarkdownRendererProps {
     content: string;
     isStreaming?: boolean;
 }
 
-const SimpleCodeHighlighter = ({
-    language,
-    children,
-}: {
-    language?: string;
-    children: string;
-}) => {
-    const highlightCode = (code: string) => {
-        // Basic syntax highlighting
-        return code
-            .replace(
-                /\b(const|let|var|function|return|if|else|for|while)\b/g,
-                '<span class="keyword">$1</span>'
-            )
-            .replace(
-                /\b(true|false|null|undefined)\b/g,
-                '<span class="builtin">$1</span>'
-            )
-            .replace(
-                /(["'`])(?:(?=(\\?))\2.)*?\1/g,
-                '<span class="string">$&</span>'
-            )
-            .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
-            .replace(/\/\/.*/g, '<span class="comment">$&</span>')
-            .replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
-    };
-
-    return (
-        <pre className={`language-${language || 'text'}`}>
-            <code
-                dangerouslySetInnerHTML={{ __html: highlightCode(children) }}
-            />
-        </pre>
-    );
-};
+interface CodeBlockProps {
+    language: string;
+    value: string;
+}
 
 export const MarkdownRenderer = ({
     content,
@@ -52,7 +25,6 @@ export const MarkdownRenderer = ({
 
     useEffect(() => {
         if (isStreaming) {
-            // Simple deduplication logic
             const lines = content.split('\n');
             const uniqueLines = lines.filter(
                 (line, index) => lines.indexOf(line) === index
@@ -63,18 +35,72 @@ export const MarkdownRenderer = ({
         }
     }, [content, isStreaming]);
 
+    const CodeBlock = useCallback(({ language, value }: CodeBlockProps) => {
+        const [copyTip, setCopyTip] = useState("Copy code");
+        
+        return (
+            <div className="relative my-4 overflow-x-auto">
+                <CopyToClipboard
+                    text={value}
+                    onCopy={() => {
+                        setCopyTip("Copied");
+                        setTimeout(() => setCopyTip("Copy code"), 2000);
+                    }}
+                >
+                    <button
+                        className="absolute right-4 z-10 p-2 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600"
+                        title={copyTip}
+                    >
+                        <ClipboardCopy size={18} />
+                    </button>
+                </CopyToClipboard>
+                <SyntaxHighlighter
+                    style={atomDark}
+                    language={language}
+                    PreTag="div"
+                    className="mockup-code scrollbar-thin scrollbar-track-base-content/5 scrollbar-thumb-base-content/40 scrollbar-track-rounded-md scrollbar-thumb-rounded"
+                    showLineNumbers={true}
+                    useInlineStyles={true}
+                >
+                    {value}
+                </SyntaxHighlighter>
+                <span
+                    style={{
+                    bottom: 0,
+                    right: 0,
+                    }}
+                    className="absolute z-40 mb-5 mr-1 rounded-lg bg-base-content/40 p-1 text-xs uppercase text-base-300 backdrop-blur-sm"
+                >
+                    {language}
+                </span>
+            </div>
+        );
+    }, []);
+
     const components: Components = {
         h1: ({ node, ...props }) => (
-            <h1 className="text-3xl font-bold text-indigo-600" {...props} />
+            <h1
+                className="text-3xl font-bold my-0 text-pink-700"
+                {...props}
+            />
         ),
         h2: ({ node, ...props }) => (
-            <h2 className="text-2xl font-semibold text-indigo-500" {...props} />
+            <h2
+                className="text-2xl font-semibold my-0 text-pink-600"
+                {...props}
+            />
         ),
         h3: ({ node, ...props }) => (
-            <h3 className="text-xl font-medium text-indigo-400" {...props} />
+            <h3
+                className="text-xl font-medium my-0 text-pink-500"
+                {...props}
+            />
         ),
         h4: ({ node, ...props }) => (
-            <h4 className="text-lg font-medium text-indigo-300" {...props} />
+            <h4
+                className="text-lg font-medium my-0 text-pink-400"
+                {...props}
+            />
         ),
         p: ({ node, ...props }) => (
             <p className="leading-relaxed text-gray-700" {...props} />
@@ -95,70 +121,42 @@ export const MarkdownRenderer = ({
         a: ({ node, ...props }) => (
             <a className="text-blue-500 hover:underline" {...props} />
         ),
+
         code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
-            return !inline && match ? (
-                <SimpleCodeHighlighter language={match[1]}>
-                    {String(children).replace(/\n$/, '')}
-                </SimpleCodeHighlighter>
-            ) : (
-                <code
-                    className="bg-gray-100 rounded px-1 py-0.5 text-sm"
-                    {...props}
-                >
+            const language = match ? match[1] : '';
+            const value = String(children).replace(/\n$/, '');
+
+            if (!inline && match) {
+                return <CodeBlock language={language} value={value} />;
+            }
+
+            return (
+                <code className={className} {...props}>
                     {children}
                 </code>
             );
         },
-        img: ({ node, ...props }) => (
-            <img
-                className="max-w-full h-auto rounded-lg shadow-md my-4"
-                {...props}
-                alt={props.alt || ''}
-            />
-        ),
         hr: ({ node, ...props }) => (
             <hr className="my-4 border-t-2 border-gray-200" {...props} />
         ),
         table: ({ node, ...props }) => (
-            <div className="overflow-x-auto my-4">
-                <table
-                    className="min-w-full divide-y divide-gray-200 border"
-                    {...props}
-                />
+            <div className="overflow-x-auto ">
+                <table className="my-0" {...props} />
             </div>
         ),
-        thead: ({ node, ...props }) => (
-            <thead className="bg-gray-50" {...props} />
-        ),
-        tbody: ({ node, ...props }) => (
-            <tbody className="bg-white divide-y divide-gray-200" {...props} />
-        ),
-        tr: ({ node, ...props }) => (
-            <tr className="hover:bg-gray-50" {...props} />
-        ),
-        th: ({ node, ...props }) => (
-            <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r last:border-r-0"
-                {...props}
-            />
-        ),
-        td: ({ node, ...props }) => (
-            <td
-                className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r last:border-r-0"
-                {...props}
-            />
-        ),
+        thead: ({ node, ...props }) => <thead {...props} />,
+        tbody: ({ node, ...props }) => <tbody {...props} />,
+        tr: ({ node, ...props }) => <tr {...props} />,
+        th: ({ node, ...props }) => <th {...props} />,
+        td: ({ node, ...props }) => <td {...props} />,
     };
 
     return (
-        <div className="prose prose-sm max-w-none dark:prose-invert">
-                <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={components}
-                >
-                    {processedContent}
-                </ReactMarkdown>
+        <div className="prose prose-zinc dark:prose-invert max-w-none scroll-smooth focus:scroll-auto">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+                {processedContent}
+            </ReactMarkdown>
         </div>
     );
 };
