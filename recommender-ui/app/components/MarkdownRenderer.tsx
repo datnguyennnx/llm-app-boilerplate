@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import ReactMarkdown, { Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
-import { ClipboardCopy } from 'lucide-react'
-import CopyToClipboard from 'react-copy-to-clipboard'
+import { ClipboardCopy, Check } from 'lucide-react'
 
 interface MarkdownRendererProps {
     content: string
@@ -76,6 +75,7 @@ export const MarkdownRenderer = ({
 
         code({inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
+            const codeString = String(children).replace(/\n$/, '');
             return !inline && match ? (
                 <SyntaxHighlighter
                     style={atomDark}
@@ -86,7 +86,7 @@ export const MarkdownRenderer = ({
                     useInlineStyles={true}
                     {...props}
                 >
-                    {String(children).replace(/\n$/, '')}
+                    {codeString}
                 </SyntaxHighlighter>
             ) : (
                 <code className={className} {...props}>
@@ -95,33 +95,41 @@ export const MarkdownRenderer = ({
             );
         },
 
-        pre({ children, ...props }: any) {
-            const codeElement = children && children.length > 0 ? children[0] : null;
-            const codeChildren = codeElement && codeElement.props ? codeElement.props.children : '';
-            const codeChunk = String(codeChildren).replace(/\n$/, '');
-            const [copyTip, setCopyTip] = useState("Copy code");
+        pre({ children }: any) {
+            const codeRef = useRef<HTMLDivElement>(null);
+            const [isCopied, setIsCopied] = useState(false);
+
+            const handleCopy = async () => {
+                if (codeRef.current) {
+                    const codeElement = codeRef.current.querySelector('code');
+                    if (codeElement) {
+                        const codeText = codeElement.innerText;
+                        // Remove line numbers and extra spaces
+                        const cleanedCode = codeText.replace(/^\s*\d+\s*|^\s*/gm, '').trim();
+                        try {
+                            await navigator.clipboard.writeText(cleanedCode);
+                            setIsCopied(true);
+                            setTimeout(() => setIsCopied(false), 2000);
+                        } catch (err) {
+                            console.error('Failed to copy text: ', err);
+                        }
+                    }
+                }
+            };
 
             return (
-                <div className="relative overflow-x-auto">
-                    <CopyToClipboard
-                        text={codeChunk}
-                        onCopy={() => {
-                            setCopyTip("Copied");
-                            setTimeout(() => setCopyTip("Copy code"), 2000);
-                        }}
+                <div className="relative overflow-x-auto" ref={codeRef}>
+                    <button
+                        onClick={handleCopy}
+                        className="absolute right-2 top-4 z-50 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600 p-2 transition-all duration-200 ease-in-out"
+                        title={isCopied ? "Copied!" : "Copy code"}
                     >
-                        <button
-                            className="absolute right-2 top-4 z-50 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600"
-                            title={copyTip}
-                        >
-                            <ClipboardCopy size={18} />
-                        </button>
-                    </CopyToClipboard>
+                        {isCopied ? <Check size={18} /> : <ClipboardCopy size={18} />}
+                    </button>
                     {children}
                 </div>
             );
         },
-
 
         hr: ({...props }) => (
             <hr className="my-4 border-t-2 border-gray-200" {...props} />
@@ -132,7 +140,7 @@ export const MarkdownRenderer = ({
                 <table className="my-0" {...props} />
             </div>
         ),
-        
+
         thead: ({...props }) => <thead {...props} />,
         tbody: ({...props }) => <tbody {...props} />,
         tr: ({...props }) => <tr {...props} />,

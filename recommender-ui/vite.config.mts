@@ -25,6 +25,6 @@ export default defineConfig({
         },
     },
     optimizeDeps: {
-        include: ['react-syntax-highlighter', 'react-copy-to-clipboard'],
+        include: ['react-syntax-highlighter'],
     },
 })
