@@ -1,5 +1,4 @@
-import React from 'react';
-import { LogoDwarves, LogoUser } from '~/components/Logo';
+import { Logo } from '~/components/Logo';
 import { LoadingDots } from '~/components/LoadingDots';
 import { MarkdownRenderer } from '~/components/MarkdownRenderer';
 
@@ -29,8 +28,8 @@ export const ChatRow= ({
                     isUser ? 'flex-row-reverse' : ''
                 } max-w-[80%]`}
             >
-                <div className="w-8 h-8 flex-shrink-0 mt-1">
-                    {isUser ? <LogoUser /> : <LogoDwarves />}
+                <div className="flex-shrink-0 mt-1">
+                    {isUser ? <Logo type='user' /> : <Logo type='robot' />}
                 </div>
                 <div
                     className={`mx-2 py-3 px-4 ${bgColor} rounded-lg ${

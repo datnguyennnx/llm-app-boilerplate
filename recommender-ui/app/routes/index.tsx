@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChatRow } from '~/components/ChatRow';
-import { LogoDwarves } from '~/components/Logo';
+import { Logo } from '~/components/Logo';
 
 export default function Index() {
     const [messages, setMessages] = useState<
@@ -28,7 +28,7 @@ export default function Index() {
         <div className="flex flex-col h-screen bg-gray-100">
             <header className="bg-white shadow-sm p-4">
                 <div className="container mx-auto flex items-center">
-                    <LogoDwarves />
+                    <Logo type='robot'/>
                     <h1 className="ml-4 text-xl font-semibold text-gray-800">
                         Recommender Chat
                     </h1>

@@ -153,18 +153,12 @@ export const MarkdownRenderer = ({
 
     return (
         <div className="prose prose-sm max-w-none dark:prose-invert">
-            {isStreaming ? (
-                <div className="whitespace-pre-wrap font-mono text-sm">
-                    {processedContent}
-                </div>
-            ) : (
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={components}
                 >
                     {processedContent}
                 </ReactMarkdown>
-            )}
         </div>
     );
 };
