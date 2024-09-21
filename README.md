@@ -184,3 +184,26 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 -   FastAPI team for the high-performance Python web framework
 -   Docker team for containerization technology
 -   All open-source libraries and tools used in this project
+
+## Codebase Context Specification
+
+This project implements the Codebase Context Specification to provide comprehensive context for both human developers and AI assistants. The following files have been added to support this specification:
+
+1. `.context.md`: Root-level context file providing an overview of the entire project.
+2. `recommender-be/.context.md`: Context file for the backend service.
+3. `recommender-ui/.context.md`: Context file for the frontend application.
+4. `.contextignore`: Specifies files and directories to be excluded from context consideration.
+5. `.contextdocs.md`: Lists external documentation sources relevant to the project.
+
+These files provide valuable information about the project's architecture, conventions, and development guidelines. They are designed to help developers and AI assistants quickly understand the project structure and make informed decisions during development.
+
+When working on this project, refer to these context files for insights into:
+
+-   Overall project structure and architecture
+-   Technology stack and key dependencies
+-   Development guidelines and best practices
+-   Business requirements and success metrics
+-   Quality assurance processes
+-   Deployment strategies
+
+By maintaining these context files, we ensure that all team members and AI assistants have access to up-to-date and relevant information about the project, facilitating more efficient and consistent development.

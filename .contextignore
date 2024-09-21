@@ -1,0 +1,62 @@
+# Ignore node_modules directories
+**/node_modules/
+
+# Ignore Python virtual environments
+**/venv/
+**/.venv/
+
+# Ignore build artifacts
+**/build/
+**/dist/
+
+# Ignore Docker-related files
+**/Dockerfile
+docker-compose*.yml
+
+# Ignore version control directories
+**/.git/
+**/.svn/
+
+# Ignore cache directories
+**/__pycache__/
+**/.cache/
+
+# Ignore log files
+**/*.log
+
+# Ignore environment files
+**/.env
+**/.env.*
+
+# Ignore IDE-specific files
+**/.vscode/
+**/.idea/
+
+# Ignore test coverage reports
+**/coverage/
+
+# Ignore dependency lock files (uncomment if you want to ignore these)
+# **/package-lock.json
+# **/yarn.lock
+# **/bun.lockb
+
+# Ignore database files
+**/*.sqlite
+**/*.db
+
+# Ignore compiled Python files
+**/*.pyc
+
+# Ignore temporary files
+**/tmp/
+**/temp/
+
+# Ignore system files
+**/.DS_Store
+**/Thumbs.db
+
+# Ignore large media files (adjust as needed)
+**/*.mp4
+**/*.mov
+**/*.avi
+**/*.webm
