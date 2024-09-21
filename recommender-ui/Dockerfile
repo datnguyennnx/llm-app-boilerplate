@@ -22,5 +22,5 @@ COPY --from=build /app/package.json .
 
 # Run the app
 USER bun
-EXPOSE 3000
+EXPOSE 5173
 CMD ["bun", "run", "start"]

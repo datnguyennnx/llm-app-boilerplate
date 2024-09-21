@@ -11,7 +11,7 @@ down-prune:
 	docker compose down --volumes
 
 up-backend:
-	docker compose -f docker-compose.backend.yml up -d
+	docker compose -f docker-compose.backend.yml up --build
 
 up-backend-rebuild:
 	docker compose -f docker-compose.backend.yml up --build --force-recreate --no-deps
@@ -19,4 +19,13 @@ up-backend-rebuild:
 down-backend:
 	docker compose -f docker-compose.backend.yml down
 
-.PHONY: up up-rebuild down down-prune up-backend up-backend-rebuild down-backend
+migrate-up:
+	docker compose -f docker-compose.backend.yml run --rm backend alembic upgrade head
+
+migrate-down:
+	docker compose -f docker-compose.backend.yml run --rm backend alembic downgrade -1
+
+migrate-create:
+	docker compose -f docker-compose.backend.yml run --rm backend alembic revision --autogenerate -m "$(name)"
+
+.PHONY: up up-rebuild down down-prune up-backend up-backend-rebuild down-backend migrate-up migrate-down migrate-create

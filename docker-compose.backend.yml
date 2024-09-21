@@ -9,3 +9,27 @@ services:
             - '8000:8000'
         environment:
             - CORS_ORIGINS=http://localhost:3000 # Allow frontend to connect when running locally
+            - DATABASE_URL=postgresql://llm_user:llm_password@db:5432/llm-boilerplate
+        depends_on:
+            db:
+                condition: service_healthy
+
+    db:
+        image: pgvector/pgvector:pg16
+        environment:
+            POSTGRES_DB: llm-boilerplate
+            POSTGRES_USER: llm_user
+            POSTGRES_PASSWORD: llm_password
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./recommender-be/database/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U llm_user -d llm-boilerplate']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    postgres_data:

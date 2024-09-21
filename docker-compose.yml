@@ -6,9 +6,11 @@ services:
             context: ./recommender-ui
             dockerfile: Dockerfile
         ports:
-            - '3000:3000'
+            - '5173:5173'
         environment:
             - NODE_ENV=production
+        networks:
+            - app-network
 
     backend:
         build:
@@ -16,6 +18,21 @@ services:
             dockerfile: Dockerfile
         ports:
             - '8000:8000'
+        environment:
+            - DATABASE_URL=postgresql://llm_user:llm_password@db:5432/llm-boilerplate
+            - SECRET_KEY=${SECRET_KEY}
+            - ALGORITHM=${ALGORITHM}
+            - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+            - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+            - FRONTEND_URL=${FRONTEND_URL}
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - app-network
 
     nginx:
         image: nginx:alpine
@@ -26,3 +43,31 @@ services:
         depends_on:
             - frontend
             - backend
+        networks:
+            - app-network
+
+    db:
+        image: pgvector/pgvector:pg16
+        environment:
+            POSTGRES_DB: llm-boilerplate
+            POSTGRES_USER: llm_user
+            POSTGRES_PASSWORD: llm_password
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./recommender-be/database/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U llm_user -d llm-boilerplate']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - app-network
+
+volumes:
+    postgres_data:
+
+networks:
+    app-network:
+        driver: bridge
