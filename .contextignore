@@ -1,32 +1,27 @@
-# Ignore node_modules directories
+# Ignore node modules
 **/node_modules/
 
 # Ignore Python virtual environments
-**/venv/
+**/__pycache__/
 **/.venv/
+**/venv/
 
 # Ignore build artifacts
 **/build/
 **/dist/
 
-# Ignore Docker-related files
-**/Dockerfile
-docker-compose*.yml
+# Ignore Docker volumes
+**/pgdata/
 
-# Ignore version control directories
-**/.git/
-**/.svn/
-
-# Ignore cache directories
-**/__pycache__/
-**/.cache/
+# Ignore environment files
+**/.env
 
 # Ignore log files
 **/*.log
 
-# Ignore environment files
-**/.env
-**/.env.*
+# Ignore temporary files
+**/tmp/
+**/temp/
 
 # Ignore IDE-specific files
 **/.vscode/
@@ -35,28 +30,15 @@ docker-compose*.yml
 # Ignore test coverage reports
 **/coverage/
 
-# Ignore dependency lock files (uncomment if you want to ignore these)
-# **/package-lock.json
-# **/yarn.lock
-# **/bun.lockb
+# Ignore database migration files
+**/alembic/versions/
 
-# Ignore database files
-**/*.sqlite
-**/*.db
+# Ignore Remix build output
+recommender-ui/build/
+recommender-ui/.cache/
 
-# Ignore compiled Python files
-**/*.pyc
-
-# Ignore temporary files
-**/tmp/
-**/temp/
-
-# Ignore system files
-**/.DS_Store
-**/Thumbs.db
-
-# Ignore large media files (adjust as needed)
-**/*.mp4
-**/*.mov
-**/*.avi
-**/*.webm
+# Ignore specific files
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+**/bun.lockb
