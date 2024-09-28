@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .api import routers as api_routers
 from .auth import routers as auth_router
+from middleware.auth import auth_middleware
 
 def create_app():
     app = FastAPI()
@@ -15,9 +16,12 @@ def create_app():
         allow_headers=["*"],  # Allows all headers
     )
 
-    # Include API routers
+    # Add authentication middleware
+    app.middleware("http")(auth_middleware)
+
+    # Include API routers with /api prefix
     for router in api_routers:
-        app.include_router(router)
+        app.include_router(router, prefix="/api", tags=["api"])
 
     # Include Google auth router
     for router in auth_router:

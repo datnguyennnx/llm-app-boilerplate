@@ -3,6 +3,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str 
+    # ANTHROPIC_API_KEY: str
     DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str
@@ -11,7 +12,10 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str
     FRONTEND_URL: str
-    
+    # DEFAULT_TEMPERATURE: float
+    # DEFAULT_MODEL_TYPE: str
+    # DEFAULT_OPENAI_MODEL: str
+    # DEFAULT_ANTHROPIC_MODEL: str
     class Config:
         env_file = ".env"
 

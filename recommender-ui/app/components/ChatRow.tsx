@@ -6,8 +6,8 @@ interface ChatRowProps {
     message: string
     isUser: boolean
     bgColor: string
-    isLoading?: boolean
-    isStreaming?: boolean
+    isLoading: boolean
+    isStreaming: boolean
 }
 
 export const ChatRow = ({
@@ -31,26 +31,20 @@ export const ChatRow = ({
                 <div className="w-8 h-8 flex-shrink-0 mt-1">
                     {isUser ? <Logo type="user" /> : <Logo type="robot" />}
                 </div>
-                {isLoading ? (
-                    <div
-                        className={`mx-2 py-3 px-4 ${bgColor} rounded-lg ${
-                            isUser ? 'rounded-tr-none' : 'rounded-tl-none'
-                        } break-words flex-grow`}
-                    >
+                <div
+                    className={`mx-2 py-3 px-4 ${bgColor} rounded-lg ${
+                        isUser ? 'rounded-tr-none' : 'rounded-tl-none'
+                    } break-words flex-grow`}
+                >
+                    {isLoading && !isStreaming ? (
                         <LoadingDots />
-                    </div>
-                ) : (
-                    <div
-                        className={`mx-2 py-3 px-4 ${bgColor} rounded-lg ${
-                            isUser ? 'rounded-tr-none' : 'rounded-tl-none'
-                        } break-words flex-grow`}
-                    >
+                    ) : (
                         <MarkdownRenderer
                             content={message}
                             isStreaming={isStreaming}
                         />
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     )

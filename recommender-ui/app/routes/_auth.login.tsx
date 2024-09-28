@@ -1,86 +1,88 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from '@remix-run/react'
-import { json, LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node'
+import { json, ActionFunctionArgs } from '@remix-run/node'
+import { useActionData, Form, useNavigate } from '@remix-run/react'
 import { Button } from '~/components/ui/button'
 import { FcGoogle } from 'react-icons/fc'
+import { useAuth } from '~/hooks/useAuth'
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const url = new URL(request.url)
-    const code = url.searchParams.get('code')
+type ActionData =
+    | { success: true; url: string }
+    | { success: false; error: string }
 
-    if (code) {
+export const action = async ({ request }: ActionFunctionArgs) => {
+    const formData = await request.formData()
+    const intent = formData.get('intent')
+
+    if (intent === 'google-login') {
         try {
-            const tokenResponse = await fetch(
-                'http://localhost:8000/auth/google/callback?code=' + code,
-                {
-                    method: 'GET',
-                },
-            )
-
-            if (tokenResponse.ok) {
-                const { access_token } = await tokenResponse.json()
-                // In a real application, you should store the token securely
-                // For this example, we'll use sessionStorage
-                return json({ success: true, access_token })
-            } else {
-                return json(
-                    { error: 'Failed to get access token' },
-                    { status: 400 },
-                )
-            }
+            const response = await fetch(process.env.AUTH_LOGIN_URL || '')
+            const data = await response.json()
+            return json<ActionData>({ success: true, url: data.url })
         } catch (error) {
-            console.error('Error during token exchange:', error)
-            return json({ error: 'Internal server error' }, { status: 500 })
+            console.error('Error initiating Google login:', error)
+            return json<ActionData>({
+                success: false,
+                error: 'Failed to initiate Google login',
+            })
         }
     }
 
-    return json({})
-}
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-    // Handle POST requests if needed
-    return null
+    return json<ActionData>({ success: false, error: 'Invalid action' })
 }
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
+    const actionData = useActionData<typeof action>()
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
+    const { getAuthTokens, logout } = useAuth()
 
     useEffect(() => {
-        const access_token = searchParams.get('access_token')
-        if (access_token) {
-            sessionStorage.setItem('accessToken', access_token)
+        // Clear any existing session
+        logout()
+
+        // Check if user is already authenticated
+        const { accessToken } = getAuthTokens()
+        if (accessToken) {
             navigate('/chat')
         }
-    }, [searchParams, navigate])
+    }, [logout, getAuthTokens, navigate])
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = () => {
         setIsLoading(true)
-        try {
-            const response = await fetch('http://localhost:8000/auth/login')
-            const data = await response.json()
-            window.location.href = data.url
-        } catch (error) {
-            console.error('Error initiating Google login:', error)
+        if (actionData?.success && actionData.url) {
+            window.location.href = actionData.url
+        } else {
             setIsLoading(false)
         }
     }
 
     return (
         <div className="flex min-h-screen items-center justify-center">
-            <div className="w-full max-w-md p-8 space-y-4 ">
+            <div className="w-full max-w-md p-8 space-y-4">
                 <h1 className="text-2xl font-bold text-center mb-8 text-nowrap">
                     Log in to LLM Boilerplate
                 </h1>
 
-                <Button
-                    onClick={handleGoogleLogin}
-                    className="w-full bg-white hover:bg-gray-100 border text-black flex items-center justify-center space-x-2 py-6 rounded-md transition duration-300 ease-in-out"
-                >
-                    <FcGoogle className="w-5 h-5 " />
-                    <span>Continue with Google</span>
-                </Button>
+                <Form method="post" onSubmit={handleGoogleLogin}>
+                    <Button
+                        type="submit"
+                        name="intent"
+                        value="google-login"
+                        disabled={isLoading}
+                        className="w-full bg-white hover:bg-gray-100 border text-black flex items-center justify-center space-x-2 py-6 rounded-md transition duration-300 ease-in-out"
+                    >
+                        <FcGoogle className="w-5 h-5" />
+                        <span>
+                            {isLoading ? 'Loading...' : 'Continue with Google'}
+                        </span>
+                    </Button>
+                </Form>
+
+                {actionData?.success === false && actionData.error && (
+                    <p className="text-red-500 text-center mt-4">
+                        {actionData.error}
+                    </p>
+                )}
             </div>
         </div>
     )

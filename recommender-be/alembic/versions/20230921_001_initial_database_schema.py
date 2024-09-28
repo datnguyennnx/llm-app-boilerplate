@@ -37,19 +37,19 @@ def upgrade():
     op.create_table('sessions',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('session_token', sa.String(), nullable=True),
+        sa.Column('access_token', sa.String(), nullable=True),
         sa.Column('expires_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_sessions_id'), 'sessions', ['id'], unique=False)
-    op.create_index(op.f('ix_sessions_session_token'), 'sessions', ['session_token'], unique=True)
+    op.create_index(op.f('ix_sessions_access_token'), 'sessions', ['access_token'], unique=True)
 
 
 def downgrade():
     # Drop sessions table
-    op.drop_index(op.f('ix_sessions_session_token'), table_name='sessions')
+    op.drop_index(op.f('ix_sessions_access_token'), table_name='sessions')
     op.drop_index(op.f('ix_sessions_id'), table_name='sessions')
     op.drop_table('sessions')
 
