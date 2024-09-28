@@ -5,7 +5,7 @@ This project provides a boilerplate for quickly setting up an LLM (Language Mode
 ## Project Structure
 
 -   `recommender-ui`: Remix.js frontend with Tailwind CSS
--   `recommender-be`: Python FastAPI backend with WebSocket support
+-   `recommender-be`: Python FastAPI backend with Server-Sent Events (SSE) support
 -   `docker-compose.yml`: Docker configuration for the entire stack
 -   `docker-compose.backend.yml`: Docker configuration for running only the backend
 -   `Makefile`: Simplified commands for building and running the project
@@ -16,7 +16,7 @@ This project provides a boilerplate for quickly setting up an LLM (Language Mode
 The LLM Application Boilerplate follows a microservices architecture consisting of the following main components:
 
 1. Remix.js Frontend: Handles the user interface and client-side logic.
-2. FastAPI Backend: Manages API requests, WebSocket connections, and integrates with the LLM service.
+2. FastAPI Backend: Manages API requests, SSE connections, and integrates with the LLM service.
 3. NGINX Reverse Proxy: Routes traffic to the appropriate service and handles SSL termination.
 
 The data flow in this system is as follows:
@@ -151,7 +151,7 @@ This setup allows you to make changes to the frontend code and see the results i
 
     - Follow FastAPI best practices for API development.
     - Use Python type hints for better code clarity.
-    - Implement WebSocket support for real-time communication.
+    - Implement Server-Sent Events (SSE) support for real-time communication.
     - Format code according to PEP 8 style guide and lint with Flake8.
 
 3. General Guidelines:
@@ -170,13 +170,11 @@ This boilerplate provides a starting point for your LLM application. You can cus
 4. Implement authentication and authorization mechanisms suitable for your application.
 5. Set up a CI/CD pipeline for automated testing and deployment.
 
-## Contributing
+## Key Features
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+1. **User Authentication**: Implements Google OAuth for user login.
+2. **Langchain Streaming Response**: Server-Sent Events (SSE) based functionality for real-time AI-generated content.
+3. **AI Integration**: Ready to integrate with AI models for generating recommendations or responses.
 
 ## Acknowledgments
 
@@ -207,3 +205,11 @@ When working on this project, refer to these context files for insights into:
 -   Deployment strategies
 
 By maintaining these context files, we ensure that all team members and AI assistants have access to up-to-date and relevant information about the project, facilitating more efficient and consistent development.
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
