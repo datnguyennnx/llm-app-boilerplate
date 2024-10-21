@@ -3,10 +3,10 @@ version: '3.8'
 services:
     frontend:
         build:
-            context: ./recommender-ui
+            context: ./frontend
             dockerfile: Dockerfile
         ports:
-            - '5173:5173'
+            - '3000:3000'
         environment:
             - NODE_ENV=production
         networks:
@@ -14,7 +14,7 @@ services:
 
     backend:
         build:
-            context: ./recommender-be
+            context: ./backend
             dockerfile: Dockerfile
         ports:
             - '8000:8000'
@@ -56,7 +56,7 @@ services:
             - '5432:5432'
         volumes:
             - postgres_data:/var/lib/postgresql/data
-            - ./recommender-be/database/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
+            - ./backend/database/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready -U llm_user -d llm-boilerplate']
             interval: 5s
