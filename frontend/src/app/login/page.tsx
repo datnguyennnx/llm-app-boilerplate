@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { FcGoogle } from 'react-icons/fc'
 
-const Login = () => {
+export default function Login() {
     const { login, isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
 
@@ -41,5 +41,3 @@ const Login = () => {
         </div>
     )
 }
-
-export default Login

@@ -20,7 +20,8 @@ export const ChatRow = ({ message, isUser, bgColor, isLoading, isStreaming }: Ch
                 <div
                     className={`mx-2 py-3 px-4 ${bgColor} rounded-lg ${
                         isUser ? 'rounded-tr-none' : 'rounded-tl-none'
-                    } break-words flex-grow`}>
+                    } break-words flex-grow`}
+                >
                     {isLoading && !isStreaming ? (
                         <LoadingDots />
                     ) : (

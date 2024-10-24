@@ -1,8 +1,8 @@
 'use client'
 
-import { FC, useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { ProtectedRoute} from '@/components/auth/ProtectedRoute'
 import { ChatRow } from '@/components/chat/ChatRow'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ interface UnifiedMessage {
     created_at?: string
 }
 
-const ChatPage: FC<ChatPageProps> = ({ params }) => {
+export default function ChatPage({ params }: ChatPageProps) {
     const router = useRouter()
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     const {
@@ -148,7 +148,8 @@ const ChatPage: FC<ChatPageProps> = ({ params }) => {
                                 <Button
                                     type="submit"
                                     disabled={isChatLoading || isStreaming}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white">
+                                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                                >
                                     Send
                                 </Button>
                             </div>
@@ -169,5 +170,3 @@ const ChatPage: FC<ChatPageProps> = ({ params }) => {
         </ProtectedRoute>
     )
 }
-
-export default ChatPage

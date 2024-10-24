@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '@/context/AuthContext'
 
 interface ProtectedRouteProps {
-    children: React.ReactNode
+    children: ReactNode
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const { isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
     const redirectInitiated = useRef(false)
@@ -28,5 +28,3 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
     return <>{children}</>
 }
-
-export default ProtectedRoute

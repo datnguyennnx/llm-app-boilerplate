@@ -1,4 +1,3 @@
-import React from 'react'
 import { Button } from '@/components/ui/button'
 
 interface Conversation {
@@ -18,7 +17,7 @@ interface ConversationAsideProps {
     hasMoreConversations: boolean
 }
 
-export const ConversationAside: React.FC<ConversationAsideProps> = ({
+export const ConversationAside = ({
     conversations,
     currentConversationId,
     onSelectConversation,
@@ -27,7 +26,7 @@ export const ConversationAside: React.FC<ConversationAsideProps> = ({
     error,
     onLoadMore,
     hasMoreConversations,
-}) => {
+}: ConversationAsideProps) => {
     return (
         <aside className="w-64 p-4 z-10 flex flex-col min-h-screen border-r-2 bg-white">
             <Button onClick={onNewConversation} disabled={isLoading} className="w-full mb-4">
@@ -42,7 +41,8 @@ export const ConversationAside: React.FC<ConversationAsideProps> = ({
                         onClick={() => onSelectConversation(conv.id)}
                         className={`p-2 mb-2 rounded cursor-pointer hover:bg-gray-200 ${
                             conv.id === currentConversationId ? 'bg-blue-100' : 'bg-gray-100'
-                        }`}>
+                        }`}
+                    >
                         {conv.title} - {new Date(conv.created_at).toLocaleString()}
                     </div>
                 ))}
