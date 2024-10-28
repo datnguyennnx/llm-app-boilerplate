@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useConversation } from '../_lib/useConversation'
-import { Message } from '@/_lib/types/chat'
+import { Message } from '@/lib/types/chat'
 
 interface HistoryMessagesProps {
     conversationId: string

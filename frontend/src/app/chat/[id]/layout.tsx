@@ -1,12 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/_components/auth/ProtectedRoute'
-import { BackgroundDots } from '@/_components/layout/BackgroundDots'
-import { SidebarProvider } from '@/_components/ui/sidebar'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { BackgroundDots } from '@/components/layout/BackgroundDots'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { ConversationAside } from '../_components/ConversationAside'
 import { useConversation } from '../_lib/useConversation'
-import { useToast } from '@/_lib/hooks/use-toast'
+import { useToast } from '@/lib/hooks/use-toast'
 
 interface ChatLayoutProps {
     children: React.ReactNode
@@ -47,7 +47,7 @@ export default function ChatLayout({ children, params }: ChatLayoutProps) {
 
     return (
         <ProtectedRoute>
-            <main className="relative flex h-screen w-full bg-gray-50">
+            <div className="relative flex h-screen w-full bg-gray-50">
                 <SidebarProvider>
                     <BackgroundDots className="absolute inset-0 z-0 opacity-50" />
                     <div className="z-10 flex h-full w-full">
@@ -66,7 +66,7 @@ export default function ChatLayout({ children, params }: ChatLayoutProps) {
                         </div>
                     </div>
                 </SidebarProvider>
-            </main>
+            </div>
         </ProtectedRoute>
     )
 }

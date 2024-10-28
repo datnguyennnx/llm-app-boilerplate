@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useConversation } from './useConversation'
 import { useSSE } from './useSSE'
-import { ChatLogicResult, ChatRequest } from '@/_lib/types/chat'
+import { ChatLogicResult, ChatRequest } from '@/lib/types/chat'
 
 export function useChatLogic(initialConversationId?: string): ChatLogicResult {
     const [input, setInput] = useState('')

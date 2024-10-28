@@ -1,6 +1,5 @@
-import React from 'react'
-import { Input } from '@/_components/ui/input'
-import { Button } from '@/_components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface ChatInputProps {
     input: string
@@ -11,14 +10,14 @@ interface ChatInputProps {
     cancelStream: () => void
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = ({
     input,
     setInput,
     handleSubmit,
     isStreaming,
     isChatLoading,
     cancelStream,
-}) => {
+}: ChatInputProps) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()

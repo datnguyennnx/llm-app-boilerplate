@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Message, StreamingState } from '@/_lib/types/chat'
+import { Message, StreamingState } from '@/lib/types/chat'
 import { MessageList } from './MessageList'
 
 interface ChatContentProps {

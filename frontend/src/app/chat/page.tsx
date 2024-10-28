@@ -4,9 +4,9 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useConversation } from './_lib/useConversation'
 import { ConversationAside } from './_components/ConversationAside'
-import { SidebarProvider } from '@/_components/ui/sidebar'
-import { useAuth } from '@/_lib/context/AuthContext'
-import { LoadingSpinner } from '@/_components/common/LoadingSpinner'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { useAuth } from '@/lib/context/AuthContext'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 
 export default function ChatPage() {
     const router = useRouter()

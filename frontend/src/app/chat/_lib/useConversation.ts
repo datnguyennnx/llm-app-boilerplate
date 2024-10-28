@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@/_lib/context/AuthContext'
-import { useToast } from '@/_lib/hooks/use-toast'
+import { useAuth } from '@/lib/context/AuthContext'
+import { useToast } from '@/lib/hooks/use-toast'
 import {
     Conversation,
     Message,
@@ -9,7 +9,7 @@ import {
     ConversationResult,
     ConversationResponse,
     MessageResponse,
-} from '@/_lib/types/chat'
+} from '@/lib/types/chat'
 
 const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 

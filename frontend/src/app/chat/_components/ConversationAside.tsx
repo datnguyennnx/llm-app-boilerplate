@@ -1,4 +1,4 @@
-import { Button } from '@/_components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
     Sidebar,
     SidebarContent,
@@ -7,9 +7,9 @@ import {
     SidebarMenu,
     SidebarMenuItem,
     SidebarMenuButton,
-} from '@/_components/ui/sidebar'
-import { LoadingSpinner } from '@/_components/common/LoadingSpinner'
-import { useAuth } from '@/_lib/context/AuthContext'
+} from '@/components/ui/sidebar'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { useAuth } from '@/lib/context/AuthContext'
 import { ConversationList } from './ConversationList'
 import { UserProfile } from './UserProfile'
 
@@ -74,16 +74,10 @@ export const ConversationAside = ({
                     />
                 )}
             </SidebarContent>
-            <SidebarFooter className="flex-shrink-0 border-t border-border p-4">
+            <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <UserProfile
-                                user={user}
-                                isLoadingUser={isLoadingUser}
-                                logout={logout}
-                            />
-                        </SidebarMenuButton>
+                        <UserProfile user={user} isLoadingUser={isLoadingUser} logout={logout} />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

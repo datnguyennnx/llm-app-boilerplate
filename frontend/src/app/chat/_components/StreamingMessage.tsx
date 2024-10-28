@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ChatRequest } from '@/_lib/types/chat'
+import { ChatRequest } from '@/lib/types/chat'
 import { useSSE } from '../_lib/useSSE'
 
 interface StreamingMessageProps {

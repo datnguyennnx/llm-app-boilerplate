@@ -1,10 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Message } from '@/_lib/types/chat'
-import { MarkdownRenderer } from '@/_components/common/MarkdownRenderer'
-import { Logo } from '@/_components/common/Logo'
-import { ScrollArea } from '@/_components/ui/scroll-area'
+import { Message } from '@/lib/types/chat'
+import { MarkdownRenderer } from '@/components/common/MarkdownRenderer'
+import { Logo } from '@/components/common/Logo'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ChatRowProps {
     conversationId: string

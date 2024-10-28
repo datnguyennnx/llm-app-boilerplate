@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "lib": ["dom", "dom.iterable", "esnext"],
         "allowJs": true,
         "skipLibCheck": true,
@@ -19,12 +20,12 @@
         ],
         "paths": {
             "@/*": ["./src/*"],
-            "@/components/*": ["./src/_components/*"],
-            "@/lib/*": ["./src/_lib/*"],
-            "@/hooks/*": ["./src/_lib/hooks/*"],
-            "@/context/*": ["./src/_lib/context/*"],
-            "@/types/*": ["./src/_lib/types/*"],
-            "@/utils/*": ["./src/_lib/utils/*"]
+            "@/components/*": ["./src/components/*"],
+            "@/lib/*": ["./src/lib/*"],
+            "@/hooks/*": ["./src/lib/hooks/*"],
+            "@/context/*": ["./src/lib/context/*"],
+            "@/types/*": ["./src/lib/types/*"],
+            "@/utils/*": ["./src/lib/utils/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "svgr.d.ts"],

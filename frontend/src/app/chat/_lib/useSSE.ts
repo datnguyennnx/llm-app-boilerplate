@@ -1,8 +1,8 @@
 import { useRef, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@/_lib/context/AuthContext'
-import { useToast } from '@/_lib/hooks/use-toast'
-import { ChatRequest, StreamResponse } from '@/_lib/types/chat'
+import { useAuth } from '@/lib/context/AuthContext'
+import { useToast } from '@/lib/hooks/use-toast'
+import { ChatRequest, StreamResponse } from '@/lib/types/chat'
 
 const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 

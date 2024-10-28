@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import { useState, useCallback } from 'react'
 import { ChatInput } from '../_components/ChatInput'
 import { ChatRow } from '../_components/ChatRow'
-import { ChatRequest } from '@/_lib/types/chat'
+import { ChatRequest } from '@/lib/types/chat'
 import { useSSE } from '../_lib/useSSE'
 
 export default function ChatPage() {

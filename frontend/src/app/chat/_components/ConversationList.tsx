@@ -1,11 +1,11 @@
-import { ScrollArea } from '@/_components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
     SidebarMenu,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarGroupContent,
-} from '@/_components/ui/sidebar'
-import { LoadingSpinner } from '@/_components/common/LoadingSpinner'
+} from '@/components/ui/sidebar'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { ConversationItem } from './ConversationItem'
 
 interface Conversation {

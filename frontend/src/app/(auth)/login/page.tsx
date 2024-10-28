@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/_lib/context/AuthContext'
-import { Button } from '@/_components/ui/button'
-import { LoadingSpinner } from '@/_components/common/LoadingSpinner'
+import { useAuth } from '@/lib/context/AuthContext'
+import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { FcGoogle } from 'react-icons/fc'
 
 export default function LoginPage() {
@@ -34,7 +34,7 @@ export default function LoginPage() {
             <Button
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full max-w-md bg-white hover:bg-gray-100 border text-black flex items-center justify-center space-x-2 py-6 rounded-md transition duration-300 ease-in-out">
+                className="w-full max-w-md bg-white hover:bg-gray-100 border text-black flex items-center justify-center space-x-2 rounded-md transition duration-300 ease-in-out">
                 <FcGoogle className="w-5 h-5" />
                 <span>{isLoading ? 'Loading...' : 'Continue with Google'}</span>
             </Button>

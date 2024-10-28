@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/lib/context/AuthContext'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 
 interface ProtectedRouteProps {

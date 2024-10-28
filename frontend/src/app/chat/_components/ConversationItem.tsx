@@ -1,6 +1,6 @@
 import { MessageSquare } from 'lucide-react'
-import { SidebarMenuItem, SidebarMenuButton } from '@/_components/ui/sidebar'
-import { Button } from '@/_components/ui/button'
+import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar'
+import { Button } from '@/components/ui/button'
 
 interface Conversation {
     id: string

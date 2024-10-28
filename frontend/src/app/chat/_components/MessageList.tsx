@@ -1,6 +1,6 @@
 'use client'
 
-import { Message, MessageListProps } from '@/_lib/types/chat'
+import { Message, MessageListProps } from '@/lib/types/chat'
 import { ChatRow } from './ChatRow'
 
 export function MessageList({ messages, isStreaming, streamingState }: MessageListProps) {

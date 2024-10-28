@@ -9,8 +9,8 @@ import {
     useMutation,
     useQueryClient,
 } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
-import { User, AuthContextType } from '@/types/auth'
+import { useToast } from '@/lib/hooks/use-toast'
+import { User, AuthContextType } from '@/lib/types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -168,6 +168,11 @@ const AuthContextContent: React.FC<{ children: React.ReactNode }> = ({ children 
             setIsAuthenticating(true)
             const loginUrl = await loginMutation.mutateAsync()
             window.location.href = loginUrl
+            toast({
+                title: 'Login Success',
+                description: 'Failed to initiate login. Please try again.',
+                variant: 'success',
+            })
         } catch (error) {
             toast({
                 title: 'Login Failed',
