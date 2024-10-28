@@ -50,11 +50,20 @@ async def auth_google(code: str, db: Session = Depends(get_db)):
         user = db.query(User).filter(User.email == idinfo["email"]).first()
         if not user:
             logger.info(f"Creating new user: {idinfo['email']}")
-            user = User(email=idinfo["email"], google_id=idinfo["sub"])
+            user = User(
+                email=idinfo["email"], 
+                google_id=idinfo["sub"],
+                picture=idinfo["picture"]
+            )
             db.add(user)
             db.commit()
             db.refresh(user)
         else:
+            # Update user's picture if it has changed
+            if user.picture != idinfo.get("picture"):
+                user.picture = idinfo.get("picture")
+                db.commit()
+                db.refresh(user)
             logger.info(f"Existing user logged in: {idinfo['email']}")
 
         expires_at = datetime.now(timezone.utc) + timedelta(seconds=token_data["expires_in"])
@@ -73,7 +82,8 @@ async def auth_google(code: str, db: Session = Depends(get_db)):
             "access_token": access_token,
             "token_type": token_data["token_type"],
             "expires_at": expires_at.isoformat(),
-            "email": user.email
+            "email": user.email,
+            "picture": user.picture
         }
         encoded_data = quote(json.dumps(frontend_data))
         
@@ -101,7 +111,8 @@ async def read_users_me(request: Request):
 
         logger.info(f"User authenticated: {user.email}")
         return {
-            "email": user.email
+            "email": user.email,
+            "picture": user.picture
         }
     except HTTPException as he:
         raise he

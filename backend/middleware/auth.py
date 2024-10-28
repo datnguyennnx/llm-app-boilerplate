@@ -23,10 +23,8 @@ async def verify_google_token(token: str):
                 "https://www.googleapis.com/oauth2/v3/tokeninfo",
                 params={"access_token": token}
             )
-            logger.info(f"Google token verification response status: {response.status_code}")
             if response.status_code == 200:
                 token_info = response.json()
-                logger.info(f"Google token verified successfully. Token info: {token_info}")
                 return token_info
             logger.warning(f"Google token verification failed. Response: {response.text}")
             return None
@@ -43,7 +41,6 @@ async def verify_token(token: str):
     # Check if the token is in the cache
     cached_user = token_cache.get(token)
     if cached_user:
-        logger.info(f"Token found in cache for user: {cached_user.email}")
         return cached_user, None
 
     db = get_db_session()
@@ -75,15 +72,12 @@ async def verify_token(token: str):
 
         # Cache the user object
         token_cache[token] = user
-        logger.info(f"Token verified successfully for user: {user.email}")
         return user, None
     except Exception as e:
         logger.error(f"Error in verify_token: {str(e)}")
         return None, f"Internal server error: {str(e)}"
 
 async def auth_middleware(request: Request, call_next):
-    logger.info(f"Processing request for path: {request.url.path}")
-    logger.info(f"Request headers: {request.headers}")
 
     # Check if the path requires authentication
     if request.url.path in PUBLIC_PATHS:
