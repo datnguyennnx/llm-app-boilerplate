@@ -1,172 +1,58 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ProtectedRoute} from '@/components/auth/ProtectedRoute'
-import { ChatRow } from '@/components/chat/ChatRow'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { BackgroundDots } from '@/components/layout/BackgroundDots'
-import { Dot } from '@/components/common/Dot'
-import { useSSE } from '@/hooks/useSSE'
-import { useConversation } from '@/hooks/useConversation'
-import { ConversationAside } from '@/components/chat/ConversationAside'
+import { useParams } from 'next/navigation'
+import { useState, useCallback } from 'react'
+import { ChatInput } from '../_components/ChatInput'
+import { ChatRow } from '../_components/ChatRow'
+import { ChatRequest } from '@/_lib/types/chat'
+import { useSSE } from '../_lib/useSSE'
 
-interface ChatPageProps {
-    params: {
-        id: string
-    }
-}
+export default function ChatPage() {
+    const { id } = useParams()
+    const conversationId = Array.isArray(id) ? id[0] : id
 
-interface UnifiedMessage {
-    id?: string
-    content: string
-    sender: 'user' | 'llm'
-    isStreaming?: boolean
-    created_at?: string
-}
-
-export default function ChatPage({ params }: ChatPageProps) {
-    const router = useRouter()
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-    const {
-        messages: sseMessages,
-        isLoading: isChatLoading,
-        isStreaming,
-        error: chatError,
-        sendMessage,
-    } = useSSE(baseUrl)
-    const {
-        conversations,
-        currentConversationId,
-        messages: conversationMessages,
-        isLoading: isConversationLoading,
-        error: conversationError,
-        addConversation,
-        loadMoreConversations,
-        pagination,
-        selectConversation,
-    } = useConversation(baseUrl)
     const [input, setInput] = useState('')
-    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const [streamingContent, setStreamingContent] = useState('')
+    const { streamMessage, isStreaming, cancelStream } = useSSE()
 
-    useEffect(() => {
-        if (params.id && params.id !== currentConversationId) {
-            selectConversation(params.id)
-        }
-    }, [params.id, currentConversationId, selectConversation])
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault()
+            if (!input.trim() || isStreaming) return
 
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [conversationMessages, sseMessages])
+            const chatRequest: ChatRequest = {
+                message: input,
+                conversation_id: conversationId,
+            }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!input.trim()) return
+            setInput('')
+            setStreamingContent('')
 
-        const chatRequest = {
-            message: input,
-            conversation_id: currentConversationId || undefined,
-            model_type: 'openai',
-            model_name: 'gpt-3.5-turbo',
-            temperature: 0.7,
-        }
-
-        await sendMessage(chatRequest)
-        setInput('')
-    }
-
-    const handleNewConversation = async () => {
-        try {
-            const newConversation = await addConversation('New Conversation')
-            router.push(`/chat/${newConversation.id}`)
-        } catch (error) {
-            console.error('Error creating new conversation:', error)
-        }
-    }
-
-    const hasMoreConversations = conversations.length < pagination.totalConversations
-
-    const allMessages: UnifiedMessage[] = [
-        ...conversationMessages.map((msg) => ({
-            id: msg.id,
-            content: msg.content,
-            sender: msg.sender as 'user' | 'llm',
-            created_at: msg.created_at,
-        })),
-        ...sseMessages.map(
-            (msg) =>
-                ({
-                    content: msg.content,
-                    sender: msg.isUser ? 'user' : 'llm',
-                    isStreaming: msg.isStreaming,
-                }) as UnifiedMessage,
-        ),
-    ]
+            streamMessage({
+                request: chatRequest,
+                onProgress: (content) => {
+                    setStreamingContent((prev) => prev + content)
+                },
+            })
+        },
+        [input, isStreaming, conversationId, streamMessage],
+    )
 
     return (
-        <ProtectedRoute>
-            <main className="flex min-h-screen relative">
-                <BackgroundDots className="absolute inset-0 z-0" />
-                <ConversationAside
-                    conversations={conversations}
-                    currentConversationId={currentConversationId}
-                    onSelectConversation={(id) => router.push(`/chat/${id}`)}
-                    onNewConversation={handleNewConversation}
-                    isLoading={isConversationLoading}
-                    error={conversationError?.message || null}
-                    onLoadMore={loadMoreConversations}
-                    hasMoreConversations={hasMoreConversations}
+        <div className="flex flex-col h-full w-4/5 mx-auto bg-white p-8 border rounded-lg">
+            <div className="flex-1 overflow-y-auto min-h-0">
+                <ChatRow conversationId={conversationId} streamingContent={streamingContent} />
+            </div>
+            <div className="flex-shrink-0 mt-4">
+                <ChatInput
+                    input={input}
+                    setInput={setInput}
+                    handleSubmit={handleSubmit}
+                    isStreaming={isStreaming}
+                    isChatLoading={false}
+                    cancelStream={cancelStream}
                 />
-                <div className="flex w-full z-10 justify-center items-center">
-                    <div className="w-4/5 drop-shadow-lg rounded-lg overflow-hidden">
-                        <div className="h-[calc(100vh-11rem)] overflow-y-auto p-8 bg-white no-scrollbar">
-                            {allMessages.map((message, index) => (
-                                <ChatRow
-                                    key={message.id || index}
-                                    message={message.content}
-                                    isUser={message.sender === 'user'}
-                                    bgColor={
-                                        message.sender === 'user' ? 'bg-blue-100' : 'bg-gray-100'
-                                    }
-                                    isLoading={false}
-                                    isStreaming={message.isStreaming || false}
-                                />
-                            ))}
-                            <div ref={messagesEndRef} />
-                        </div>
-                        <form onSubmit={handleSubmit} className="p-4 bg-white">
-                            <div className="flex bg-white">
-                                <Input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask for anything"
-                                    className="flex-grow mr-2 bg-gray-100"
-                                    disabled={isChatLoading || isStreaming}
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={isChatLoading || isStreaming}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                                >
-                                    Send
-                                </Button>
-                            </div>
-                        </form>
-                        <div className="px-6 py-2 space-x-4 text-sm text-gray-500 border-gray-200 bg-white flex items-center">
-                            <div className="flex items-center">
-                                <Dot status={!chatError} />
-                                <p>Connection</p>
-                            </div>
-                            <div className="flex items-center">
-                                <Dot status={isChatLoading || isStreaming} />
-                                <p>Generating</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </ProtectedRoute>
+            </div>
+        </div>
     )
 }

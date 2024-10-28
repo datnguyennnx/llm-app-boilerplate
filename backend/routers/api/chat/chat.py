@@ -1,70 +1,188 @@
 import logging
+import time
+import math
 from fastapi import APIRouter, HTTPException, Depends, Request, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from core.model_interface import ModelFactory, ModelInterface
-from models.models import Conversation, Message, User
+from models.models import Conversation, Message
 from database.database import get_db
-import json
 import traceback
-from typing import AsyncGenerator, Optional, List
-from starlette.background import BackgroundTask
-from pydantic import BaseModel, Field
+from typing import List
 from uuid import UUID
+from sqlalchemy import desc, func, asc
+
+from .chat_models import (
+    ChatRequest, MessageResponse, ConversationResponse, 
+    ConversationsListResponse, ConversationCreate, MessagesListResponse
+)
+from .chat_utils import stream_generator, create_model_for_conversation
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-class ChatRequest(BaseModel):
-    message: str
-    conversation_id: Optional[UUID] = None
-    model_type: str = Field(default="openai")
-    model_name: str = Field(default="gpt-3.5-turbo")
-    temperature: float = Field(default=0.7, ge=0, le=1)
-
-    class Config:
-        allow_population_by_field_name = True
-
-class MessageResponse(BaseModel):
-    id: UUID
-    sender: str
-    content: str
-    created_at: str
-
-async def stream_generator(model: ModelInterface, content: str, request: Request, db: Session, conversation_id: UUID) -> AsyncGenerator[str, None]:
+@router.get('/conversations', response_model=ConversationsListResponse)
+async def get_conversations(
+    request: Request,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1, description="Page number, starting from 1"),
+    per_page: int = Query(10, ge=1, le=50, description="Number of items per page")
+):
+    start_time = time.time()
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    logger.info(f"GET /conversations - User ID: {user.id} - Page: {page}")
+    
     try:
-        async for token in model.generate(content):
-            if await request.is_disconnected():
-                logger.info("Client disconnected, stopping generation")
-                break
-            yield f"data: {json.dumps({'data': token})}\n\n"
+        offset = (page - 1) * per_page
         
-        # Store the complete LLM response
-        complete_response = "".join([token async for token in model.generate(content)])
-        new_message = Message(conversation_id=conversation_id, sender="llm", content=complete_response)
-        db.add(new_message)
-        db.commit()
+        total_count = db.query(func.count(Conversation.id))\
+            .filter(Conversation.user_id == user.id)\
+            .scalar()
         
-        yield "data: [DONE]\n\n"
+        total_pages = math.ceil(total_count / per_page)
+        
+        conversations = db.query(Conversation)\
+            .filter(Conversation.user_id == user.id)\
+            .order_by(desc(Conversation.created_at))\
+            .offset(offset)\
+            .limit(per_page)\
+            .all()
+        
+        response_conversations = [
+            ConversationResponse(
+                id=conv.id,
+                title=conv.title,
+                created_at=conv.created_at.isoformat()
+            ) for conv in conversations
+        ]
+        
+        logger.info(
+            f"Retrieved {len(response_conversations)} conversations for user {user.id}. "
+            f"Page: {page}, Total pages: {total_pages}"
+        )
+        
+        return ConversationsListResponse(
+            conversations=response_conversations,
+            page=page,
+            total_pages=total_pages,
+            total_count=total_count,
+            per_page=per_page
+        )
+        
     except SQLAlchemyError as e:
-        logger.error(f"Database error in stream_generator: {str(e)}")
-        db.rollback()
-        yield f"data: {json.dumps({'error': 'Database error occurred'})}\n\n"
+        logger.error(f"Database error in get_conversations: {str(e)}")
+        raise HTTPException(status_code=500, detail="A database error occurred")
     except Exception as e:
-        logger.error(f"Error in stream_generator: {str(e)}")
-        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        logger.error(f"Unexpected error in get_conversations: {str(e)}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+
+@router.get('/messages/{conversation_id}', response_model=MessagesListResponse)
+async def get_messages(
+    conversation_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    start_time = time.time()
+    user = request.state.user
+    logger.info(f"Fetching all messages for conversation: {conversation_id}")
+    
+    try:
+        # Verify conversation belongs to user
+        conversation = db.query(Conversation).filter(
+            Conversation.id == conversation_id,
+            Conversation.user_id == user.id
+        ).first()
+        if not conversation:
+            logger.error(f"Conversation not found: {conversation_id}")
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        # Query all messages with chronological ordering (oldest to newest)
+        messages = db.query(Message)\
+            .filter(Message.conversation_id == conversation_id)\
+            .order_by(asc(Message.created_at))\
+            .all()
+
+        response_messages = [
+            MessageResponse(
+                id=msg.id,
+                role=msg.role,
+                content=msg.content,
+                created_at=msg.created_at.isoformat()
+            ) for msg in messages
+        ]
+
+        logger.info(f"Retrieved {len(response_messages)} messages for conversation {conversation_id}")
+
+        return MessagesListResponse(
+            messages=response_messages,
+            page=1,
+            total_pages=1,
+            total_count=len(response_messages),
+            per_page=len(response_messages)
+        )
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
     finally:
-        yield "data: [DONE]\n\n"
+        total_time = time.time() - start_time
+        logger.info(f"Total processing time for get_messages: {total_time:.2f} seconds")
+
+@router.post('/conversations', response_model=ConversationResponse)
+async def create_conversation(
+    conversation: ConversationCreate,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    start_time = time.time()
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    logger.info(f"POST /conversations - User ID: {user.id}")
+    
+    try:
+        new_conversation = Conversation(
+            user_id=user.id,
+            title=conversation.title
+        )
+        db.add(new_conversation)
+        db.commit()
+        db.refresh(new_conversation)
+        
+        logger.info(f"Created new conversation: {new_conversation.id}")
+        
+        return ConversationResponse(
+            id=new_conversation.id,
+            title=new_conversation.title,
+            created_at=new_conversation.created_at.isoformat()
+        )
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error in create_conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail="A database error occurred")
+    except Exception as e:
+        logger.error(f"Unexpected error in create_conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+    finally:
+        total_time = time.time() - start_time
+        logger.info(f"Total processing time for create_conversation: {total_time:.2f} seconds")
 
 @router.post('/streaming/ask')
 async def streaming_ask(request: Request, db: Session = Depends(get_db)) -> StreamingResponse:
+    start_time = time.time()
     user = request.state.user
     logger.info(f"Streaming ask request received for user: {user.email}")
     
     try:
         raw_data = await request.json()
-        logger.info(f"Raw request data: {raw_data}")
+        logger.debug(f"Raw request data: {raw_data}")
         
         try:
             data = ChatRequest(**raw_data)
@@ -72,95 +190,65 @@ async def streaming_ask(request: Request, db: Session = Depends(get_db)) -> Stre
             logger.error(f"Validation error: {str(ve)}")
             raise HTTPException(status_code=422, detail=str(ve))
 
-        logger.info(f"Validated request data: {data.dict()}")
-
-        if not data.conversation_id:
-            # Create a new conversation
-            new_conversation = Conversation(user_id=user.id, title=data.message[:50])  # Use first 50 chars of message as title
-            db.add(new_conversation)
-            db.commit()
-            db.refresh(new_conversation)
-            data.conversation_id = new_conversation.id
-            logger.info(f"Created new conversation with id: {data.conversation_id}")
-        else:
-            # Verify the conversation belongs to the user
-            conversation = db.query(Conversation).filter(
-                Conversation.id == data.conversation_id,
-                Conversation.user_id == user.id
-            ).first()
-            if not conversation:
-                logger.error(f"Conversation not found for id: {data.conversation_id} and user: {user.id}")
-                raise HTTPException(status_code=404, detail="Conversation not found")
-
-        # Store the user's message
-        new_message = Message(conversation_id=data.conversation_id, sender="user", content=data.message)
-        db.add(new_message)
-        db.commit()
-        logger.info(f"Stored user message in conversation: {data.conversation_id}")
-
-        logger.info(f"Creating model: type={data.model_type}, name={data.model_name}, temperature={data.temperature}")
         try:
-            model = ModelFactory.create_model(data.model_type, data.model_name, data.temperature)
-        except Exception as e:
-            logger.error(f"Error creating model: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error creating model: {str(e)}")
-        
-        logger.info("Returning StreamingResponse")
-        
-        async def cleanup():
-            logger.info("Cleaning up resources after streaming")
-            await model.cleanup()
+            if not data.conversation_id:
+                new_conversation = Conversation(
+                    user_id=user.id, 
+                    title=data.message[:50]
+                )
+                db.add(new_conversation)
+                db.commit()
+                db.refresh(new_conversation)
+                data.conversation_id = new_conversation.id
+                logger.info(f"Created new conversation: {data.conversation_id}")
+            else:
+                conversation = db.query(Conversation).filter(
+                    Conversation.id == data.conversation_id,
+                    Conversation.user_id == user.id
+                ).first()
+                if not conversation:
+                    logger.error(f"Conversation not found: {data.conversation_id}")
+                    raise HTTPException(status_code=404, detail="Conversation not found")
 
-        return StreamingResponse(
-            stream_generator(model, data.message, request, db, data.conversation_id),
-            media_type="text/event-stream",
-            background=BackgroundTask(cleanup)
-        )
+            new_message = Message(
+                conversation_id=data.conversation_id,
+                role="user",
+                content=data.message
+            )
+            db.add(new_message)
+            db.commit()
+            logger.info(f"Stored user message in conversation: {data.conversation_id}")
+
+            setup_time = time.time() - start_time
+            logger.info(f"Setup time before streaming: {setup_time:.2f} seconds")
+
+            model = create_model_for_conversation(data.conversation_id, data.model_type, data.model_name, data.temperature)
+
+            return StreamingResponse(
+                stream_generator(model, data.conversation_id, data.message, request, db),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "Content-Type": "text/event-stream",
+                    "X-Accel-Buffering": "no",
+                    "Access-Control-Allow-Origin": "*",
+                }
+            )
+
+        except SQLAlchemyError as e:
+            logger.error(f"Database error during conversation handling: {str(e)}")
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Database error occurred")
+
     except ValueError as ve:
-        logger.error(f"Invalid model type: {str(ve)}")
+        logger.error(f"Invalid request data: {str(ve)}")
         raise HTTPException(status_code=400, detail=str(ve))
-    except SQLAlchemyError as e:
-        logger.error(f"Database error in streaming ask endpoint: {str(e)}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="A database error occurred")
     except Exception as e:
-        logger.error(f"Error in streaming ask endpoint: {str(e)}\n{traceback.format_exc()}")
+        logger.error(f"Unexpected error: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred")
-
-@router.get('/messages/{conversation_id}', response_model=List[MessageResponse])
-async def get_messages(
-    conversation_id: UUID,
-    request: Request,
-    db: Session = Depends(get_db),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100)
-):
-    user = request.state.user
-    logger.info(f"GET /messages/{conversation_id} - User email: {user.email}")
-    
-    try:
-        conversation = db.query(Conversation).filter(
-            Conversation.id == conversation_id,
-            Conversation.user_id == user.id
-        ).first()
-        if not conversation:
-            logger.error(f"Conversation not found for id: {conversation_id} and user: {user.id}")
-            raise HTTPException(status_code=404, detail="Conversation not found")
-
-        messages = db.query(Message)\
-            .filter(Message.conversation_id == conversation_id)\
-            .order_by(Message.created_at)\
-            .offset(skip)\
-            .limit(limit)\
-            .all()
-
-        logger.info(f"Retrieved {len(messages)} messages for conversation {conversation_id}")
-        return [MessageResponse(id=msg.id, sender=msg.sender, content=msg.content, created_at=str(msg.created_at)) for msg in messages]
-    except SQLAlchemyError as e:
-        logger.error(f"Database error in get_messages: {str(e)}")
-        raise HTTPException(status_code=500, detail="A database error occurred")
-    except Exception as e:
-        logger.error(f"Error in get_messages: {str(e)}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+    finally:
+        total_time = time.time() - start_time
+        logger.info(f"Total processing time for streaming_ask: {total_time:.2f} seconds")
 
 logger.info("Chat router initialized")

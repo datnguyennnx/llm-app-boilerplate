@@ -1,53 +1,87 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useConversation } from '@/hooks/useConversation'
-import { ConversationAside } from '@/components/chat/ConversationAside'
-import { Button } from '@/components/ui/button'
+import { useConversation } from './_lib/useConversation'
+import { ConversationAside } from './_components/ConversationAside'
+import { SidebarProvider } from '@/_components/ui/sidebar'
+import { useAuth } from '@/_lib/context/AuthContext'
+import { LoadingSpinner } from '@/_components/common/LoadingSpinner'
 
 export default function ChatPage() {
     const router = useRouter()
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-    const { conversations, isLoading, error, addConversation, loadMoreConversations, pagination } =
-        useConversation(baseUrl)
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
+    const {
+        conversations,
+        isLoading: isConversationsLoading,
+        hasNextPage,
+        isFetchingNextPage,
+        loadMoreConversations,
+        addConversation,
+    } = useConversation()
+
+    useEffect(() => {
+        if (!isAuthLoading && !isAuthenticated) {
+            router.push('/login')
+        }
+    }, [isAuthLoading, isAuthenticated, router])
+
+    useEffect(() => {
+        if (!isConversationsLoading && conversations.length > 0) {
+            router.push(`/chat/${conversations[0].id}`)
+        }
+    }, [conversations, isConversationsLoading, router])
+
+    const handleSelectConversation = (id: string) => {
+        router.push(`/chat/${id}`)
+    }
 
     const handleNewConversation = async () => {
         try {
             const newConversation = await addConversation('New Conversation')
             router.push(`/chat/${newConversation.id}`)
         } catch (error) {
-            console.error('Error creating new conversation:', error)
+            console.error('Failed to create new conversation:', error)
         }
     }
 
-    const hasMoreConversations = conversations.length < pagination.totalConversations
+    if (isAuthLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <LoadingSpinner className="w-8 h-8" />
+            </div>
+        )
+    }
 
     return (
-        <div className="flex min-h-screen">
-            <ConversationAside
-                conversations={conversations}
-                currentConversationId={null}
-                onSelectConversation={(id) => router.push(`/chat/${id}`)}
-                onNewConversation={handleNewConversation}
-                isLoading={isLoading}
-                error={error?.message || null}
-                onLoadMore={loadMoreConversations}
-                hasMoreConversations={hasMoreConversations}
-            />
-            <div className="flex-grow flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-4">Welcome to the Chat</h1>
-                    <p className="mb-4">
-                        Select a conversation from the sidebar or start a new one.
-                    </p>
-                    <Button
-                        onClick={handleNewConversation}
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                    >
-                        Start New Conversation
-                    </Button>
+        <div className="flex h-full">
+            <SidebarProvider>
+                <ConversationAside
+                    conversations={conversations}
+                    currentConversationId={null}
+                    onSelectConversation={handleSelectConversation}
+                    onNewConversation={handleNewConversation}
+                    isLoading={isConversationsLoading}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    loadMoreConversations={loadMoreConversations}
+                />
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                        {isConversationsLoading ? (
+                            <div className="flex flex-col items-center gap-2">
+                                <LoadingSpinner className="w-6 h-6" />
+                                <p>Loading conversations...</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-2">
+                                <p className="text-lg">No conversations yet</p>
+                                <p className="text-sm">Start a new one!</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            </SidebarProvider>
         </div>
     )
 }
